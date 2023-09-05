@@ -27,6 +27,7 @@ cloudinary.config({
 //the filetoURLPath gives the correct / url slash while reading or woriting , and the dire name gives the dirname of the path
 //import.meta.url provides absolute file path module as per in the browser
 const __dirname = dirname(fileURLToPath(import.meta.url));
+//creates the express static files in the dist
 app.use(express.static(path.resolve(__dirname, './client/dist')));
 
 //middlewares - only in dev mode morgan will be used
@@ -48,6 +49,7 @@ app.get('/api/v1/test', (req, res) => {
 });
 
 //combining the dist folders in the browser and public folders in the server so both the server and client will have the same
+//gets the req from the client
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, './client/dist', 'index.html'));
 });

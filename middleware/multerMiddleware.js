@@ -1,12 +1,12 @@
 import multer from 'multer';
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads'); //file path
-  },
-  filename: (req, file, cb) => {
-    const fileName = file.originalname;
-    cb(null, fileName); // file name
-  }
-});
+import DataParser from 'datauri/parser.js';
+import path from 'path';
+
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+const parser = new DataParser();
+export const formatImage = file => {
+  const fileExtensin = path.extname(file.originalname).toString();
+  return parser.format(fileExtensin, file.buffer).content;
+};
 export default upload;

@@ -3,6 +3,7 @@ import User from '../models/UserModel.js';
 import Job from '../models/JobModel.js';
 import cloudinary from 'cloudinary';
 import { promises as fs } from 'fs';
+import { formatImage } from '../middleware/multerMiddleware.js';
 //promises act as a await
 
 export const getCurrentUser = async (req, res) => {
@@ -21,18 +22,15 @@ export const getApplicationStatus = async (req, res) => {
 export const updateUser = async (req, res) => {
   //just in case if the password in the obj exist remove it
   const obj = { ...req.body };
+  delete obj.password; //if we accedentally included password in the react input
   //imge check
   if (req.file) {
-    //upload to cloudinary from the local path
-    const cloudinary_response = await cloudinary.v2.uploader.upload(req.file.path);
-    //remove the local stored image
-    await fs.unlink(req.file.path);
+    const file = formatImage(req.file); //upload to cloudinary from the local path
+    const cloudinary_response = await cloudinary.v2.uploader.upload(file);
     //including the new property in obj - dot notation
     obj.avatar = cloudinary_response.secure_url;
     obj.avatarPublicId = cloudinary_response.public_id;
   }
-  //if we accedentally included password in the react input
-  delete obj.password;
   //destory previously stored image in the cloudinary
   const old_updated_User = await User.findByIdAndUpdate(req.user.userId, obj);
   //input form update - file & imageupdate - destory old-updateUser.avatarPublicId
