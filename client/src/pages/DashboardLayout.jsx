@@ -1,10 +1,11 @@
-import { Outlet, redirect, useLoaderData, useNavigate } from 'react-router-dom';
+import { Outlet, redirect, useLoaderData, useNavigate, useNavigation } from 'react-router-dom';
 import Wrapper from '../assets/wrappers/Dashboard';
 import { Navbar, BigSidebar, SmallSidebar } from '../components';
 import { createContext, useContext, useState } from 'react';
 import { checkDefaultTheme } from '../App';
 import customFetch from '../utils/customFetch';
 import { toast } from 'react-toastify';
+import Loading from '../components/Loading';
 
 //getting the cookie details through react router
 export const loader = async () => {
@@ -20,8 +21,11 @@ export const loader = async () => {
 const DashboardContext = createContext();
 
 const Dashboard = () => {
+  //to get the loaderdata
   const { user } = useLoaderData();
-
+  //to know the state if the page
+  const navigation = useNavigation();
+  const isPageLoading = navigation.state === 'loading';
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
   const [isDarktheme, setisDarktheme] = useState(checkDefaultTheme());
@@ -50,9 +54,7 @@ const Dashboard = () => {
           <BigSidebar />
           <div>
             <Navbar />
-            <div className='dashboard-page'>
-              <Outlet context={{ user }} />
-            </div>
+            <div className='dashboard-page'>{isPageLoading ? <Loading /> : <Outlet context={{ user }} />}</div>
           </div>
         </main>
       </Wrapper>
