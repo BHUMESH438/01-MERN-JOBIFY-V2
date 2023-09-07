@@ -16,6 +16,8 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import cloudinary from 'cloudinary';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 
 //image-uploads
 cloudinary.config({
@@ -38,6 +40,8 @@ if (process.env.NODE_ENV === 'development') {
 //parse the json fn data
 app.use(cookieParser());
 app.use(express.json());
+app.use(helmet());
+app.use(mongoSanitize());
 
 //common route middleware
 //only user logged in then he must access ohter routes

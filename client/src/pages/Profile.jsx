@@ -1,28 +1,32 @@
 import { FormRow, SubmitBtn } from '../components';
 import Wrapper from '../assets/wrappers/DashboardFormPage';
-import { useOutletContext } from 'react-router-dom';
+import { redirect, useOutletContext } from 'react-router-dom';
 import { Form } from 'react-router-dom';
 import customFetch from '../utils/customFetch';
 import { toast } from 'react-toastify';
 
-export const action = async ({ request }) => {
-  const formData = await request.formData();
-  //we always dont need to upload the image the while editing
-  //if the file is present check the file size
-  const file = formData.get('avatar');
-  if (file && file.size > 500000) {
-    toast.error('image size > 5MB!!!!,should be less than 5mb');
-    return null;
-  }
-  try {
-    // file uploaded so send the formdata without converting it to json format
-    await customFetch.patch('/users/update-user', formData);
-    toast.success('Profile updated successfully');
-  } catch (error) {
-    toast(error?.response?.data?.msg);
-  }
-  return null;
-};
+export const action =
+  queryClient =>
+  async ({ request }) => {
+    const formData = await request.formData();
+    //we always dont need to upload the image the while editing
+    //if the file is present check the file size
+    const file = formData.get('avatar');
+    if (file && file.size > 500000) {
+      toast.error('image size > 5MB!!!!,should be less than 5mb');
+      return null;
+    }
+    try {
+      // file uploaded so send the formdata without converting it to json format
+      await customFetch.patch('/users/update-user', formData);
+      queryClient.invalidateQueries(['user']);
+      toast.success('Profile updated successfully');
+      return redirect('/dashboard');
+    } catch (error) {
+      toast(error?.response?.data?.msg);
+      return null;
+    }
+  };
 
 const Profile = () => {
   const { user } = useOutletContext();

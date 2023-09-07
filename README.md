@@ -6246,7 +6246,7 @@ queryKey: ['stats'],: The queryKey property is an array that serves as a unique 
 
 queryFn: () => customFetch.get('/jobs/stats'),: The queryFn property specifies the function that will be executed when the query is triggered. In this case, it uses an arrow function that calls customFetch.get('/jobs/stats'). The customFetch object is likely a custom wrapper around the fetch function or an external HTTP client library, used to make the actual API request to retrieve job statistics.In React Query, the queryFn property expects a function that returns a promise. The promise should resolve with the data you want to fetch and store in the query cache.
 
-customFetch.get('/jobs/stats'): This line is making an HTTP GET request to the /jobs/stats endpoint, which is the API route that provides the job statistics data.
+customFetch.get('/jobs/stats'): This line is making  an HTTP GET request to the /jobs/stats endpoint, which is the API route that provides the job statistics data.
 
 #### Get Stats with React Query
 
@@ -6328,7 +6328,7 @@ const Stats = () => {
 export default Stats;
 ```
 
-#### React Query for Current User
+#### React Query for Current Userqq
 
 DashboardLayout.jsx
 

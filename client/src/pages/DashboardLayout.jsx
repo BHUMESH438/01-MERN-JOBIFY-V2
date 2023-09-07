@@ -1,17 +1,22 @@
-import { Outlet, redirect, useLoaderData, useNavigate, useNavigation } from 'react-router-dom';
+import { Outlet, redirect, useNavigate, useNavigation } from 'react-router-dom';
 import Wrapper from '../assets/wrappers/Dashboard';
-import { Navbar, BigSidebar, SmallSidebar } from '../components';
-import { createContext, useContext, useState } from 'react';
-import { checkDefaultTheme } from '../App';
+import { Navbar, BigSidebar, SmallSidebar, Loading } from '../components';
+import { createContext, useContext, useEffect, useState } from 'react';
 import customFetch from '../utils/customFetch';
 import { toast } from 'react-toastify';
-import Loading from '../components/Loading';
+import { useQuery } from '@tanstack/react-query';
 
-//getting the cookie details through react router
-export const loader = async () => {
-  try {
-    const { data } = await customFetch('/users/current-user');
+const userQuery = {
+  queryKey: ['user'],
+  queryFn: async () => {
+    const { data } = await customFetch.get('/users/current-user');
     return data;
+  }
+};
+//getting the cookie details through react router
+export const loader = queryClient => async () => {
+  try {
+    return await queryClient.ensureQueryData(userQuery);
   } catch (error) {
     return redirect('/');
   }
@@ -20,15 +25,17 @@ export const loader = async () => {
 //create context
 const DashboardContext = createContext();
 
-const Dashboard = () => {
+const Dashboard = ({ checkDefaultTheme, queryClient }) => {
   //to get the loaderdata
-  const { user } = useLoaderData();
+  // const { user } = useLoaderData();
+  const { user } = useQuery(userQuery)?.data;
   //to know the state if the page
   const navigation = useNavigation();
   const isPageLoading = navigation.state === 'loading';
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
-  const [isDarktheme, setisDarktheme] = useState(checkDefaultTheme());
+  const [isDarktheme, setisDarktheme] = useState(checkDefaultTheme);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   const toggleDarkTheme = () => {
     const newdarktheme = !isDarktheme;
@@ -42,10 +49,30 @@ const Dashboard = () => {
   };
   //logout is a getreq from  client
   const logoutUser = async () => {
-    navigate('/');
     await customFetch.get('/auth/logout');
+    queryClient.invalidateQueries(['user']);
     toast.success('Logging out.....');
+    navigate('/');
   };
+
+  // this helps to avoid the users loggedin in the app even after a logout
+  customFetch.interceptors.response.use(
+    response => {
+      return response;
+    },
+    error => {
+      if (error?.response?.status === 401) {
+        setIsAuthError(true);
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  useEffect(() => {
+    if (!isAuthError) return;
+    logoutUser();
+  }, [isAuthError]);
+
   return (
     <DashboardContext.Provider value={{ user, showSidebar, isDarktheme, toggleDarkTheme, toggleSidebar, logoutUser }}>
       <Wrapper>
